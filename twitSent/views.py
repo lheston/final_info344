@@ -7,7 +7,11 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth import logout
 from django.template import RequestContext
 from twitSent.utils import *
+from textblob import TextBlob
+import pandas as pd
+import json
 
+DataSet = pd.DataFrame
 
 def get_api(request):
 	# set up and return a twitter api object
@@ -42,18 +46,28 @@ def info(request):
 	"""
 	Redirect page of after authenticate
 	"""
+
+
 	auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(request.session.get('key'), request.session.get('secret'))
 	api = tweepy.API(auth)
 
 	# Get username
-	username = auth.get_username()
-
+	
+	tweets = tweepy.API(auth)
+	user_data = api.user_timeline()
+	#for result in user_data:
+	#	formated = toDataFrame(result)
+	#print(formated)
 	# Get timeline
 	timeline_list = api.home_timeline()
+	username = api.me().name
+
 
 	
-	return render(request, 'twitSent/info.html', {'user': username})
+
+	
+	return render(request, 'twitSent/info.html', {'user': user_data, 'userSpecs': username})
 
 def auth(request):
 
@@ -99,3 +113,28 @@ def check_key(request):
 	except KeyError:
 		return False
 	return True
+
+
+def toDataFrame(tweets):
+
+    DataSet = pd.DataFrame()
+
+    
+    DataSet['tweetText'] = [tweet.text for tweet in tweets]
+    DataSet['tweetID'] = [tweet.id for tweet in tweets]
+    DataSet['tweetRetweetCt'] = [tweet.retweet_count for tweet in tweets]
+    DataSet['tweetFavoriteCt'] = [tweet.favorite_count for tweet in tweets]
+    DataSet['tweetSource'] = [tweet.source for tweet in tweets]
+    DataSet['tweetCreated'] = [tweet.created_at for tweet in tweets]
+    DataSet['userID'] = [tweet.user.id for tweet in tweets]
+    DataSet['userScreen'] = [tweet.user.screen_name for tweet in tweets]
+    DataSet['userName'] = [tweet.user.name for tweet in tweets]
+    DataSet['userCreateDt'] = [tweet.user.created_at for tweet in tweets]
+    DataSet['userDesc'] = [tweet.user.description for tweet in tweets]
+    DataSet['userFollowerCt'] = [tweet.user.followers_count for tweet in tweets]
+    DataSet['userFriendsCt'] = [tweet.user.friends_count for tweet in tweets]
+    DataSet['userLocation'] = [tweet.user.location for tweet in tweets]
+    DataSet['userTimezone'] = [tweet.user.time_zone for tweet in tweets]
+    #DataSet['lat'] = [tweet.geo.lat for tweet in tweets]
+
+    return DataSet
