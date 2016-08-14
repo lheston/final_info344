@@ -6,10 +6,8 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth import logout
 
+from twitSent.utils import *
 
-
-CONSUMER_KEY = '7kXWkyNwmrDvwyy6THDxsRRS6'
-CONSUMER_SECRET = 'jUPVaJuNUyW2GKT3x1rwabwQJjpx2Tsr4NiiiDaUbSLTeZy8x8'
 
 def get_api(request):
 	# set up and return a twitter api object
@@ -44,10 +42,12 @@ def info(request):
 	"""
 	display some user info to show we have authenticated successfully
 	"""
-	#if check_key(request):
-	 
-	#else:
-	#	return HttpResponseRedirect(reverse('main'))
+	if check_key(request):
+		api = get_api(request)
+		user = api.me()
+		return render_to_response('twitSent/info.html', {'user' : user})
+	else:
+		return HttpResponseRedirect(reverse('main'))
 
 def auth(request):
 	# start the OAuth process, set up a handler with our details
