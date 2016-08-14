@@ -1,4 +1,4 @@
-from django.shortcuts import render
+#from django.shortcuts import render
 # Create your views here.
 import tweepy
 from django.http import *
@@ -6,7 +6,19 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth import logout
 
-from . import utils
+
+
+CONSUMER_KEY = '7kXWkyNwmrDvwyy6THDxsRRS6'
+CONSUMER_SECRET = 'jUPVaJuNUyW2GKT3x1rwabwQJjpx2Tsr4NiiiDaUbSLTeZy8x8'
+
+def get_api(request):
+	# set up and return a twitter api object
+	oauth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+	access_key = request.session['access_key_tw']
+	access_secret = request.session['access_secret_tw']
+	oauth.set_access_token(access_key, access_secret)
+	api = tweepy.API(oauth)
+	return api
 
 def main(request):
 	"""
@@ -47,7 +59,7 @@ def auth(request):
     auth_url = oauth.get_authorization_url(True)
     response = HttpResponseRedirect(auth_url)
     # store the request token
-    request.session['unauthed_token_tw'] = (oauth.request_token.key, oauth.request_token.secret) 
+    request.session['unauthed_token_tw'] = (oauth.request_token['oauth_token'], oauth.request_token['oauth_token_secret']) 
     return response
 
 def callback(request):
