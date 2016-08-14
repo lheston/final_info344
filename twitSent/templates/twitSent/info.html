@@ -5,10 +5,7 @@
 			<h3>{{userSpecs}}</h3>
 
 			{% for users in user %}
-				<p>{{users.text}}<p/>
-			{% endfor %}
-			{% for users in user %}
-				<p>{{users.source}}<p/>
+				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
 			{% endfor %}
 			<a href="/logout/" title="logout">logout</a>
 		</div>
