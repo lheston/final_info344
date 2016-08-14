@@ -67,7 +67,7 @@ def info(request):
 	
 
 	
-	return render(request, 'twitSent/info.html', {'user': user_data, 'userSpecs': username})
+	return render(request, 'twitSent/info.html', {'user': timeline_list, 'userSpecs': username})
 
 def auth(request):
 
