@@ -44,12 +44,10 @@ def info(request):
 	"""
 	display some user info to show we have authenticated successfully
 	"""
-	if check_key(request):
-		api = get_api(request)
-		user = api.me()
-		return render_to_response('twitSent/info.html', {'user' : user})
-	else:
-		return HttpResponseRedirect(reverse('main'))
+	#if check_key(request):
+	 
+	#else:
+	#	return HttpResponseRedirect(reverse('main'))
 
 def auth(request):
 	# start the OAuth process, set up a handler with our details
@@ -68,14 +66,14 @@ def callback(request):
     token = request.session.get('unauthed_token_tw', None)
     # remove the request token now we don't need it
     request.session.delete('unauthed_token_tw')
-    oauth.set_request_token(token[0], token[1])
+    oauth.request_token = token
     # get the access token and store
     try:
     	oauth.get_access_token(verifier)
     except tweepy.TweepError:
     	print('Error, failed to get access token')
-    request.session['access_key_tw'] = oauth.access_token.key
-    request.session['access_secret_tw'] = oauth.access_token.secret
+    request.session['access_key_tw'] = oauth.access_token
+    request.session['access_secret_tw'] = oauth.access_token_secret
     response = HttpResponseRedirect(reverse('info'))
     return response
 
