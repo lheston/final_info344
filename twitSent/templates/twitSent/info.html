@@ -1,11 +1,19 @@
 {% extends "twitSent/base.html" %}
-
+{% load temp_functions %}
 	{% block content %}
 		<div id="container">
-			<h3>{{userSpecs}}</h3>
-
+			<h3>Welcome {{userSpecs}} lets check out your twitter</h3>
+			<p>Average total Sentiment your feed : {{ user | all}}</p>
+			<p>Average total Sentiment of your tweets : {{ userData | all}}</p>
+			<h5>Your twitter feed<h5>
 			{% for users in user %}
 				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
+				<p>Sentiment of Tweet : {{ users.text | sent }}</p>
+			{% endfor %}
+			<h5>What you have tweeted</h5>
+			{% for users in userData %}
+				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
+				<p>Sentiment of Tweet : {{ users.text | sent }}</p>
 			{% endfor %}
 			<a href="/logout/" title="logout">logout</a>
 		</div>

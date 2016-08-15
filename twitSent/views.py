@@ -1,6 +1,7 @@
 #from django.shortcuts import render
 # Create your views here.
 import tweepy
+import textblob.download_corpora
 from django.http import *
 from django.shortcuts import render_to_response, render
 from django.core.urlresolvers import reverse
@@ -47,27 +48,20 @@ def info(request):
 	Redirect page of after authenticate
 	"""
 
-
+	test = pd.DataFrame
 	auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(request.session.get('key'), request.session.get('secret'))
 	api = tweepy.API(auth)
 
-	# Get username
-	
 	tweets = tweepy.API(auth)
 	user_data = api.user_timeline()
-	#for result in user_data:
-	#	formated = toDataFrame(result)
-	#print(formated)
-	# Get timeline
+	#get page data
 	timeline_list = api.home_timeline()
+	#get username
 	username = api.me().name
 
-
 	
-
-	
-	return render(request, 'twitSent/info.html', {'user': timeline_list, 'userSpecs': username})
+	return render(request, 'twitSent/info.html', {'user': timeline_list, 'userSpecs': username,'userData': user_data})
 
 def auth(request):
 
