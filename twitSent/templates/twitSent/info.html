@@ -1,13 +1,14 @@
 {% extends "twitSent/base.html" %}
 {% load temp_functions %}
 	{% block content %}
+	<div id='main'>
 		<div id="container">
 			<h3>Welcome {{userSpecs}} lets check out your twitter</h3>
 			<h4> As of {% now "jS F Y H:i" %}</h4>
 			<p>Average total Sentiment your feed : {{ user | all | floatformat:3}}</p>
 			<p>Average total Sentiment of your tweets : {{ userData | all | floatformat:3}}</p>
 		</div>
-		</div>
+		<div id="container">
 			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
 		</div>
 		<div id="container">
@@ -24,6 +25,8 @@
 				<p>Sentiment of Tweet : {{ users.text | sent | floatformat:3}}</p>
 			{% endfor %}
 		</div>
+		<div>
 			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
 		</div>
+	</div>
 	{% endblock %}
