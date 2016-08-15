@@ -5,16 +5,21 @@
 			<h3>Welcome {{userSpecs}} lets check out your twitter</h3>
 			<p>Average total Sentiment your feed : {{ user | all}}</p>
 			<p>Average total Sentiment of your tweets : {{ userData | all}}</p>
+		</div>
+		<div id="container">
 			<h5>Your twitter feed<h5>
 			{% for users in user %}
 				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
 				<p>Sentiment of Tweet : {{ users.text | sent }}</p>
 			{% endfor %}
+		</div>
+		<div id="container">
 			<h5>What you have tweeted</h5>
 			{% for users in userData %}
 				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
 				<p>Sentiment of Tweet : {{ users.text | sent }}</p>
 			{% endfor %}
-			<a href="/logout/" title="logout">logout</a>
+		</div>
+			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
 		</div>
 	{% endblock %}
