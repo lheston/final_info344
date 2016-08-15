@@ -12,6 +12,7 @@ from textblob import TextBlob
 import pandas as pd
 import json
 
+
 DataSet = pd.DataFrame
 
 def get_api(request):

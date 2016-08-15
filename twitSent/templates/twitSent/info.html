@@ -3,6 +3,7 @@
 	{% block content %}
 		<div id="container">
 			<h3>Welcome {{userSpecs}} lets check out your twitter</h3>
+			<h4> As of {% now "jS F Y H:i" %}</h4>
 			<p>Average total Sentiment your feed : {{ user | all}}</p>
 			<p>Average total Sentiment of your tweets : {{ userData | all}}</p>
 		</div>
