@@ -6,6 +6,9 @@
 			<p>Average total Sentiment your feed : {{ user | all}}</p>
 			<p>Average total Sentiment of your tweets : {{ userData | all}}</p>
 		</div>
+		</div>
+			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
+		</div>
 		<div id="container">
 			<h5>Your twitter feed<h5>
 			{% for users in user %}
