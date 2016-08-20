@@ -1,0 +1,11 @@
+{% extends "twitSent/base.html" %}
+{% load temp_functions %}
+
+{% block content %}
+    <h1>New Text for the sentimizer</h1>
+	<h5>Note this will not tweet</h5>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}

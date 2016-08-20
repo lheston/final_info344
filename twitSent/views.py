@@ -1,9 +1,8 @@
 #from django.shortcuts import render
 # Create your views here.
 import tweepy
-import textblob.download_corpora
 from django.http import *
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth import logout
 from django.template import RequestContext
@@ -11,6 +10,15 @@ from twitSent.utils import *
 from textblob import TextBlob
 import pandas as pd
 import json
+from afinn import Afinn
+from .models import Post, blacklist
+from .forms import PostForm
+from django.db import transaction
+from ratelimit.decorators import ratelimit
+from rest_framework.decorators import api_view
+from twitSent.serializers import UrlsSerializer
+from rest_framework.response import Response
+
 
 
 DataSet = pd.DataFrame
@@ -60,9 +68,19 @@ def info(request):
 	timeline_list = api.home_timeline()
 	#get username
 	username = api.me().name
+	#form = PostForm()
+	#if form.is_valid():
+	#	post = form.save(commit=False)
+	list1 = blacklist.objects.values_list('tweetContent', flat=True).distinct
+	for tweet in user_data:
+		p, post = Post.objects.get_or_create(tweetContent=tweet.text, name= username, sent=tweet.text)
+		#p = p.objects.exclude(blacklist=blacklist.tweetContent)
+		#p.objects.filter(time__gte=datetime.now()).exclude(id__in=list1)
+		p.save()
 
-	
-	return render(request, 'twitSent/info.html', {'user': timeline_list, 'userSpecs': username,'userData': user_data})
+	#list1 = blacklist.objects.values_list('tweetContent')
+	url = Post.objects.all()
+	return render(request, 'twitSent/info.html', {'user': list1, 'userSpecs': username,'userData': url})
 
 def auth(request):
 
@@ -109,27 +127,85 @@ def check_key(request):
 		return False
 	return True
 
+def delete(request, pk):
+	post = get_object_or_404(Post, pk=pk)
+	post = Post.objects.filter(pk=pk).update(bad=2)
+	#post.save();
+	#post = post.delete()
+	return HttpResponseRedirect(reverse('info'))
 
-def toDataFrame(tweets):
+def post_new(request):
+	if request.method == "POST":
+		auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+		auth.set_access_token(request.session.get('key'), request.session.get('secret'))
+		api = tweepy.API(auth)
 
-    DataSet = pd.DataFrame()
+		tweets = tweepy.API(auth)
+		#get username
+		username = api.me().name
+		
+		form = PostForm(request.POST)
+		if form.is_valid():
+			post = form.save(commit=False)
+			post.tweetContent = request.POST['tweetContent']
+			post.name = username
+			post.sent = sent(request.POST['tweetContent'])
+			post.save()
+			return redirect('info')
+	else:
+		form = PostForm()
+	return render(request, 'twitSent/post_new.html', {'form': form})
 
-    
-    DataSet['tweetText'] = [tweet.text for tweet in tweets]
-    DataSet['tweetID'] = [tweet.id for tweet in tweets]
-    DataSet['tweetRetweetCt'] = [tweet.retweet_count for tweet in tweets]
-    DataSet['tweetFavoriteCt'] = [tweet.favorite_count for tweet in tweets]
-    DataSet['tweetSource'] = [tweet.source for tweet in tweets]
-    DataSet['tweetCreated'] = [tweet.created_at for tweet in tweets]
-    DataSet['userID'] = [tweet.user.id for tweet in tweets]
-    DataSet['userScreen'] = [tweet.user.screen_name for tweet in tweets]
-    DataSet['userName'] = [tweet.user.name for tweet in tweets]
-    DataSet['userCreateDt'] = [tweet.user.created_at for tweet in tweets]
-    DataSet['userDesc'] = [tweet.user.description for tweet in tweets]
-    DataSet['userFollowerCt'] = [tweet.user.followers_count for tweet in tweets]
-    DataSet['userFriendsCt'] = [tweet.user.friends_count for tweet in tweets]
-    DataSet['userLocation'] = [tweet.user.location for tweet in tweets]
-    DataSet['userTimezone'] = [tweet.user.time_zone for tweet in tweets]
-    #DataSet['lat'] = [tweet.geo.lat for tweet in tweets]
+def sent(tweet):
+	y = []
+	afinn = Afinn(emoticons=True)
+	#for sentence in tweet:
+	y = afinn.score(tweet)
+	#	y.append(x)
 
-    return DataSet
+	return str(y)
+
+
+@ratelimit(key='ip', rate='10/m', block=True)
+@api_view(['GET', 'POST'])
+def url_list(request, format=None):
+	"""
+	Lists all urls, or create a url.
+	"""
+	if request.method =='GET':
+		urlsdata = Post.objects.all()
+		serializer = UrlsSerializer(urlsdata, many=True)
+		return Response(serializer.data)
+	elif request.method == 'POST':
+		serializer = UrlsSerializer(data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+
+
+
+@ratelimit(key='ip', rate='10/m', block=True)
+@api_view(['GET', 'PUT', 'DELETE'])
+def url_detail(request, pk, format=None):
+	"""
+	Retrive, update or delete a book
+	"""
+	try:
+		 users = Post.objects.get(pk=pk)
+	except Post.DoesNotExist:
+		return Response(status=status.HTTP_404_NOT_FOUND)
+
+	if request.method == 'GET':
+		serializer = UrlsSerializer(users)
+		return Response(serializer.data)
+	elif request.method == 'PUT':
+		serializer = UrlsSerializer(user, data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data)
+		return Response(serializer.errors, status=status.tatus.HTTP_400_BAD_REQUEST)
+	elif request.method == 'DELETE':
+		user.delete()
+		return Response(status=status.HTTP_204_NO_CONTENT)

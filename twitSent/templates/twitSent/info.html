@@ -1,29 +1,26 @@
 {% extends "twitSent/base.html" %}
 {% load temp_functions %}
 	{% block content %}
+	<a href="{% url 'post_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+
 	<div id='main'>
 		<div id="container">
 			<h3>Welcome {{userSpecs}} lets check out your twitter</h3>
 			<h4> As of {% now "jS F Y H:i" %}</h4>
-			<p>Average total Sentiment your feed : {{ user | all | floatformat:3}}</p>
-			<p>Average total Sentiment of your tweets : {{ userData | all | floatformat:3}}</p>
 		</div>
 		<div id="container">
 			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
 		</div>
 		<div id="container">
-			<h5>Your twitter feed<h5>
-			{% for users in user %}
-				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
-				<p>Sentiment of Tweet : {{ users.text | sent | floatformat:3}}</p>
-			{% endfor %}
-		</div>
-		<div id="container">
 			<h5>What you have tweeted</h5>
 			{% for users in userData %}
-				<p>{{users.user.name}} : {{users.text}} | {{users.user.created_at}}<p/>
-				<p>Sentiment of Tweet : {{ users.text | sent | floatformat:3}}</p>
+				{% if users.bad != '2' %}
+					<p>{{users.name}} : {{users.tweetContent}}<p/>
+					<p>Sentiment of Tweet : {{ users.tweetContent | sent | floatformat:3}} {{ users.bad }}</p>
+					<p><a href="{% url 'delete' pk=users.pk %}" name="delete">Delete</a></p>
+				{% endif %}
 			{% endfor %}
+			
 		</div>
 		<div>
 			<a href="{% url 'oauth_unauth' %}" title="logout">logout</a>
